@@ -1,0 +1,113 @@
+========================================================================
+KET QUA BENCHMARK - Nguyen The Khang (2A202602964)
+Thoi gian: 2026-09-19 10:25 UTC
+Python: 3.11.9
+Strategy: fixed_size (chunk_size=500, overlap=100)
+Backend: tfidf-word-unigram-l2 (lexical, offline) + extractive (khong LLM)
+Chunks nap: 162
+========================================================================
+
+------------------------------------------------------------------------
+## Q1: Theo quy định của UEH, tỷ lệ tương đồng từ bao nhiêu phần trăm thì sản phẩm học thuật bị xem là có dấu hiệu đạo văn?
+Filter: null
+Gold:   Theo snapshot UEH, tỷ lệ tương đồng từ 20% trở lên là một dấu hiệu định lượng, sau khi loại các phần được miễn trừ nêu trong quy định; không tự động kết luận đạo văn chỉ từ tỷ lệ này.
+
+Rank    Score  Chunk ID
+1      0.4561  ueh-dao-van-ai-quy-dinh-chung:fixed_size:003
+       >  ảnh, mô hình, sản phẩm học thuật của người khác mà không ghi nhận, trích dẫn hoặc chú thích phù hợp; hoặc tái sử dụng sản phẩm học thuật của chính mình (tự đạo văn) mà không nêu rõ nguồn gốc và tình ...
+2      0.4402  ueh-dao-van-ai-quy-dinh-chung:fixed_size:004
+       > kiểm tra đạo văn có chức năng so sánh với cơ sở dữ liệu học thuật rộng và cho phép phân tích chi tiết mức độ trùng lặp, được UEH phê duyệt sử dụng). Tỷ lệ tương đồng không phải là căn cứ duy nhất để k...
+3      0.4165  ueh-dao-van-ai-quy-dinh-chung:fixed_size:009
+       > ng cụ tương đương để phát hiện tỷ lệ tương đồng học thuật trong các sản phẩm học thuật. Kết quả tỷ lệ tương đồng chỉ mang tính tham khảo, hỗ trợ, không tự động kết luận là đạo văn. Việc kết luận dựa t...
+
+Agent output: [EXTRACTIVE BASELINE — không phải LLM] trích nguyên văn 3 chunk trên (định nghĩa đạo văn, định nghĩa tỷ lệ tương đồng, Điều 3 Turnitin) — không chứa "20% trở lên".
+
+------------------------------------------------------------------------
+## Q2: Sản phẩm học thuật đã chỉnh sửa nhưng vẫn vi phạm lỗi đạo văn thì xử lý ra sao?
+Filter: {"audience": "student"}
+Gold:   Trong bối cảnh bài tập học phần của người học: giảng viên phụ trách lập biên bản/thông báo chuyển về đơn vị quản lý để xử lý tùy mức độ vi phạm quy định tại Phụ lục 3.
+
+Rank    Score  Chunk ID
+1      0.4009  ueh-xu-ly-vi-pham-nguoi-hoc:fixed_size:002
+       >  nhiệm theo các quy định của UEH và pháp luật hiện hành.  ### 2.3 Đối với các bài kiểm tra, bài tập, tiểu luận và các bài khác thuộc các học phần  a) Khi bị phát hiện vi phạm lần đầu, người học phải c...
+2      0.3325  ueh-xu-ly-vi-pham-nguoi-hoc:fixed_size:005
+       > ật hiện hành.  ### 2.2. Đối với các bài kiểm tra, bài tập, tiểu luận, đồ án, dự án và các bài khác thuộc học phần  a) Khi bị phát hiện vi phạm lần đầu, người học phải chỉnh sửa và nộp lại bài theo yêu...
+3      0.2734  ueh-xu-ly-vi-pham-nguoi-hoc:fixed_size:000
+       > # UEH — Xử lý vi phạm đạo văn và sử dụng AI đối với người học  (Kèm theo Quyết định số: 4002/QĐ-ĐHKT-NCPTGKTC, ngày 18 tháng 12 năm 2025 của Giám đốc Đ...
+
+Agent output: [EXTRACTIVE BASELINE — không phải LLM] chunk 1 chứa "b) Sau khi đã chỉnh sửa, người học nộp lại bài nhưng vẫn vi phạm lỗi đạo văn thì giảng viên phụ trách học phần lập biên bản/thông báo chuyển về đơn vị quản lý để xử lý tùy theo mức độ vi phạm quy định tại Phụ lục 3."
+
+------------------------------------------------------------------------
+## Q3: Khi ghi nhận việc dùng công cụ AI trong bài làm, câu acknowledgement cần nêu những thông tin gì?
+Filter: null
+Gold:   Theo hướng dẫn RMIT Library: nêu cách sử dụng AI, tên công cụ và nhà phát triển, năm nội dung AI được người dùng tạo ra. Không bắt buộc phiên bản/ngày dùng trừ khi giảng viên yêu cầu.
+
+Rank    Score  Chunk ID
+1      0.2160  ueh-dao-van-ai-quy-dinh-chung:fixed_size:014
+       > ạt động học thuật tại UEH được sử dụng AI để hỗ trợ hoạt động nghiên cứu và học tập tại UEH trên cơ sở tuân thủ các nguyên tắc sau:  - Minh bạch: ghi rõ công cụ AI tạo sinh đã sử dụng, mục đích sử dụn...
+2      0.1707  ueh-dao-van-ai-quy-dinh-chung:fixed_size:017
+       > , không bắt buộc thông báo nếu chỉ sử dụng để kiểm tra ngôn ngữ, chỉnh lỗi chính tả, ngữ pháp hoặc dịch thuật trực tiếp không mang tính sáng tạo nội dung. 3. Những hành vi bị xem là vi phạm quy tắc sử...
+3      0.1629  ueh-dao-van-ai-quy-dinh-chung:fixed_size:020
+       > huật  1. Việc phát hiện và đánh giá vi phạm sử dụng AI trong học thuật do giảng viên phụ trách/người hướng dẫn hoặc hội đồng/đơn vị có thẩm quyền thực hiện, trên cơ sở xem xét các yếu tố: mức độ sử dụ...
+
+Agent output: [EXTRACTIVE BASELINE — không phải LLM] trích nguyên tắc "Minh bạch" của UEH — không phải tài liệu RMIT.
+
+------------------------------------------------------------------------
+## Q4: Những loại thông tin nào không được phép nhập vào công cụ AI tạo sinh?
+Filter: null
+Gold:   Theo snapshot UNA, không nhập thông tin cá nhân, bí mật, độc quyền hoặc nhạy cảm: ví dụ hồ sơ sinh viên/tuyển sinh, số an sinh xã hội, dữ liệu thẻ/ngân hàng, giấy tờ định danh, dữ liệu y tế/bảo hiểm, dữ liệu người tham gia nghiên cứu chưa được đồng ý công khai, hồ sơ nội bộ và nội dung thuộc NDA/sở hữu trí tuệ chưa được phép. Danh sách ví dụ không giới hạn ở một loại dữ liệu.
+
+Rank    Score  Chunk ID
+1      0.2731  ueh-dao-van-ai-quy-dinh-chung:fixed_size:011
+       > lỗi kỹ thuật hoặc sơ suất trong ghi nguồn, trích dẫn không đầy đủ, có thể được xem xét yêu cầu chỉnh sửa mà không xử phạt nếu không có dấu hiệu gian lận.  ## Điều 4. Sử dụng AI trong học thuật  1. Tro...
+2      0.2475  ueh-dao-van-ai-quy-dinh-chung:fixed_size:016
+       >  cấp cho AI dữ liệu cá nhân, dữ liệu mật, thông tin chưa công bố hoặc dữ liệu nghiên cứu nội bộ của UEH hoặc đối tác nếu chưa được phép. - Không lạm dụng: không sử dụng AI để thay thế nhiệm vụ học thu...
+3      0.2366  ueh-dao-van-ai-quy-dinh-chung:fixed_size:017
+       > , không bắt buộc thông báo nếu chỉ sử dụng để kiểm tra ngôn ngữ, chỉnh lỗi chính tả, ngữ pháp hoặc dịch thuật trực tiếp không mang tính sáng tạo nội dung. 3. Những hành vi bị xem là vi phạm quy tắc sử...
+
+Agent output: [EXTRACTIVE BASELINE — không phải LLM] trích Điều 4 của UEH — không phải danh sách của UNA.
+
+------------------------------------------------------------------------
+## Q5: Thông tư 49/2026/TT-BGDĐT có hiệu lực từ ngày nào và thay thế những thông tư nào?
+Filter: null
+Gold:   Theo Điều 22 trong snapshot nhóm cung cấp: hiệu lực từ 15/08/2026; Thông tư 15/2018/TT-BGDĐT và 30/2023/TT-BGDĐT hết hiệu lực từ ngày đó. Đây là gold answer kiểm thử snapshot, chưa xác minh tình trạng pháp lý hiện hành.
+
+Rank    Score  Chunk ID
+1      0.3587  tt49-2026-ung-dung-cong-nghe-ai:fixed_size:029
+       > học thuật; trung thực trong học tập, giảng dạy, nghiên cứu khoa học và công bố việc sử dụng công nghệ, trí tuệ nhân tạo khi có yêu cầu.  ## Điều 22. Điều khoản thi hành  1. Thông tư này có hiệu lực th...
+2      0.3111  tt49-2026-ung-dung-cong-nghe-ai:fixed_size:030
+       > n điện tử của các cơ sở giáo dục đại học, các trường cao đẳng sư phạm; Thông tư số 30/2023/TT-BGDĐT ngày 29 tháng 12 năm 2023 của Bộ trưởng Bộ Giáo dục và Đào tạo quy định về ứng dụng công nghệ thông ...
+3      0.3103  tt49-2026-ung-dung-cong-nghe-ai:fixed_size:000
+       > # Thông tư 49/2026/TT-BGDĐT — Ứng dụng công nghệ và AI trong giáo dục đại học  Số: 49/2026/TT-BGDĐT — Hà Nội, ngày 30 tháng 06 năm 2026.  Quy định ứng dụng công nghệ trong giáo dục đại học, giáo dục n...
+
+Agent output: [EXTRACTIVE BASELINE — không phải LLM] chunk 1 chứa "1. Thông tư này có hiệu lực thi hành kể từ ngày 15 tháng 08 năm 2026. 2. Thông tư số 15/2018/TT-BGDĐT ... Thông tư số 30/2023/TT-BGDĐT"
+
+========================================================================
+## A/B - Q2 co/khong metadata filter
+========================================================================
+
+### CO filter (audience=student)
+Rank    Score  Audience   Chunk ID
+1      0.4009  student    ueh-xu-ly-vi-pham-nguoi-hoc:fixed_size:002
+2      0.3325  student    ueh-xu-ly-vi-pham-nguoi-hoc:fixed_size:005
+3      0.2734  student    ueh-xu-ly-vi-pham-nguoi-hoc:fixed_size:000
+
+### KHONG filter
+Rank    Score  Audience   Chunk ID
+1      0.4009  student    ueh-xu-ly-vi-pham-nguoi-hoc:fixed_size:002
+2      0.3488  faculty    ueh-xu-ly-vi-pham-giang-vien:fixed_size:000
+3      0.3325  student    ueh-xu-ly-vi-pham-nguoi-hoc:fixed_size:005
+
+========================================================================
+Ket thuc benchmark.
+
+------------------------------------------------------------------------
+Lần chạy khám phá trước đó (scripts/run_lab.ps1 benchmark, cấu hình chunk mặc định, Hit@3/MRR mức tài liệu):
+tfidf fixed_size   chunks= 92 Hit@3=100% MRR=1.000
+tfidf by_sentences chunks=133 Hit@3=80% MRR=0.700
+tfidf recursive    chunks=102 Hit@3=80% MRR=0.800
+tfidf heading      chunks=145 Hit@3=100% MRR=1.000
+mock  fixed_size   chunks= 92 Hit@3=40% MRR=0.167
+mock  by_sentences chunks=133 Hit@3=20% MRR=0.067
+mock  recursive    chunks=102 Hit@3=20% MRR=0.100
+mock  heading      chunks=145 Hit@3=20% MRR=0.200

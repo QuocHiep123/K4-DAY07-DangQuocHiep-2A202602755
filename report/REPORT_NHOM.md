@@ -124,7 +124,7 @@ class HeadingChunker:
 **Thành viên 2 — Nguyễn Thế Khang (2A202602964)**
 - **Loại chiến lược:** `FixedSizeChunker(chunk_size=500, overlap=100)`
 - **Mô tả & lý do chọn:** Đây là baseline không phụ thuộc cấu trúc. Overlap 100 (20%) giúp thông tin nằm ở ranh giới có hai cơ hội lọt top-k, và corpus crawl về không phải lúc nào cũng có heading sạch.
-- **Tự chạy:** backend TF-IDF (lexical, offline) và mock, đo Hit@3/MRR ở mức tài liệu cho 4 chiến lược; agent là extractive baseline, không phải LLM.
+- **Tự chạy:** backend TF-IDF (lexical, offline); 162 chunk; agent là extractive baseline, không phải LLM; đủ top-3 từng câu và A/B filter.
 
 **Thành viên 3 — Nguyễn Việt Dũng (2A202602812)**
 - **Loại chiến lược:** `RecursiveChunker(chunk_size=500)`
@@ -133,14 +133,22 @@ class HeadingChunker:
 
 ### Kết quả mỗi thành viên tự chạy
 
-**Nguyễn Thế Khang:** TF-IDF và mock, Hit@3/MRR ở mức tài liệu, 4 chiến lược:
+Output gốc của từng người nằm trong thư mục `ket_qua_thanh_vien/`.
 
-| Backend | fixed_size | by_sentences | recursive | heading |
+**Nguyễn Thế Khang:** TF-IDF (word unigram, L2) + agent extractive, fixed_size(500, overlap 100), 162 chunk. Rubric do nhóm chấm thủ công:
+
+| # | Top-1 (score) | Chunk chứa đáp án? | Agent (extractive) | Rubric |
 |---|---|---|---|---|
-| TF-IDF (word unigram, L2) | 92 chunk · Hit@3 100% · MRR 1.000 | 133 · 80% · 0.700 | 102 · 80% · 0.800 | 145 · 100% · 1.000 |
-| mock | 92 · 40% · 0.167 | 133 · 20% · 0.067 | 102 · 20% · 0.100 | 145 · 20% · 0.200 |
+| Q1 | `ueh-dao-van…:003` định nghĩa đạo văn (0.456) | Không: 3 chunk UEH về định nghĩa/Turnitin, không có "20%" | Trích định nghĩa, không có con số | 0 |
+| Q2 | `ueh-xu-ly-vi-pham-nguoi-hoc:002` (0.401) | Có, hạng 1 | Trích đúng câu b) "…lập biên bản/thông báo chuyển về đơn vị quản lý…" ✅ | 2 |
+| Q3 | `ueh-dao-van…:014` nguyên tắc Minh bạch (0.216) | Không, top-3 toàn UEH | Trích quy định UEH, sai nguồn | 0 |
+| Q4 | `ueh-dao-van…:011` Điều 4 (0.273) | Không, top-3 toàn UEH | Trích quy định UEH, sai nguồn | 0 |
+| Q5 | `tt49…:029` **Điều 22** (0.359) | Có, hạng 1: chứa cả "15 tháng 08 năm 2026" và "30/2023/TT-BGDĐT" | Trích đúng hiệu lực và 2 TT bị thay thế ✅ | 2 |
+| | | naive 6/10 · evidence 4/10 | | **4/10** |
 
-> Nhận xét: với TF-IDF, fixed_size và heading cùng đạt Hit@3 100%. Mock chỉ 20–40%, gần ngẫu nhiên, đúng như dự đoán vì mock không mang ngữ nghĩa. Đây là chấm theo tài liệu nên không nói được chunk có chứa đáp án hay không. Demo Q2 (TF-IDF + heading) trả về 3 chunk `ueh-xu-ly-vi-pham-nguoi-hoc`, nhưng đoạn trích ra là "vi phạm lần đầu → nộp lại bài", chưa phải ý "vẫn vi phạm sau chỉnh sửa → lập biên bản".
+A/B Q2 (Khang): top-1 **không đổi** (`nguoi-hoc:002`, vì TF-IDF khớp đúng cụm "vẫn vi phạm lỗi đạo văn" chỉ có trong tài liệu người học). Nhưng khi không lọc, hạng 2 là `ueh-xu-ly-vi-pham-giang-vien:000` (faculty, 0.349); lọc `student` thì slot đó được thay bằng `nguoi-hoc:005`. Filter ở đây làm sạch top-3 chứ không cứu top-1.
+
+Ở lần chạy khám phá trước (cấu hình chunk mặc định, Hit@3/MRR mức tài liệu), TF-IDF cho fixed_size 100%/1.000, heading 100%/1.000, recursive 80%/0.800, by_sentences 80%/0.700. Mock chỉ 20–40%, gần ngẫu nhiên, xác nhận mock không mang ngữ nghĩa.
 
 **Nguyễn Việt Dũng:** OpenAI `text-embedding-3-small` + `gpt-4.1-mini`, recursive (177 chunk). Rubric do nhóm chấm thủ công:
 
@@ -169,7 +177,17 @@ Có ba cách chấm (chi tiết ở mục 3):
 | Nguyễn Việt Dũng | Recursive(500) | 161 / 393 | 10 | 2 | **5** | Chunk gọn, Q2 đứng top-1 | Mảnh con mất tên Điều; Q5 lấy đúng Điều 22 nhưng thiếu dòng "hiệu lực", agent trả lời thiếu |
 
 **Chiến lược nào tốt nhất cho chủ đề này? Tại sao?**
-> **HeadingChunker** tốt nhất (rubric 7/10, evidence 6/10), vì văn bản quy định vốn được cấu trúc theo Điều/mục, và việc gắn tiêu đề Điều vào chunk vừa làm embedding "hiểu" chunk nói về điều gì, vừa cho LLM ngữ cảnh để trả lời đúng đối tượng. Tuy vậy, khác biệt thật nằm ở **mức nội dung**: chấm theo `doc_id` thì cả ba chiến lược đều 10/10 và không phân biệt được gì. Chỉ khi kiểm tra chunk có chứa đáp án hay không thì mới lộ ra rằng chunker "đúng tài liệu nhưng sai đoạn" thua rõ (recursive chỉ 2/10 evidence). Chưa có chiến lược nào thắng mọi câu: fixed có overlap thắng ở câu liệt kê dài (Q4). Kết quả tự chạy của Khang (TF-IDF: heading và fixed cùng Hit@3 100%, recursive 80%) cũng xếp hạng giống bản đối chứng: recursive đứng cuối.
+> **HeadingChunker** tốt nhất (rubric 7/10, evidence 6/10), vì văn bản quy định vốn được cấu trúc theo Điều/mục, và việc gắn tiêu đề Điều vào chunk vừa làm embedding "hiểu" chunk nói về điều gì, vừa cho LLM ngữ cảnh để trả lời đúng đối tượng. Tuy vậy, khác biệt thật nằm ở **mức nội dung**: chấm theo `doc_id` thì cả ba chiến lược đều 10/10 và không phân biệt được gì. Chỉ khi kiểm tra chunk có chứa đáp án hay không thì mới lộ ra rằng chunker "đúng tài liệu nhưng sai đoạn" thua rõ (recursive chỉ 2/10 evidence). Chưa có chiến lược nào thắng mọi câu: fixed có overlap thắng ở câu liệt kê dài (Q4). Kết quả khám phá của Khang (TF-IDF: heading và fixed cùng Hit@3 100%, recursive 80%) cũng xếp hạng giống bản đối chứng: recursive đứng cuối.
+
+**Tổng hợp theo backend** (rubric /10, không so trực tiếp được vì khác cả chiến lược lẫn model):
+
+| Người chạy | Chiến lược | Backend | naive | evidence | rubric |
+|---|---|---|---|---|---|
+| Hiệp | heading | Gemini + gemini-2.5-flash | 10 | 6 | 7 |
+| Khang | fixed | TF-IDF + extractive | 6 | 4 | 4 |
+| Dũng | recursive | OpenAI small + gpt-4.1-mini | 6 | 2 | 3 |
+
+Cả TF-IDF lẫn OpenAI small đều **trượt Q3 và Q4**, hai câu hỏi tiếng Việt có đáp án nằm trong tài liệu tiếng Anh. Chỉ Gemini (đa ngữ mạnh) lấy được RMIT/UNA. Ngược lại, TF-IDF **thắng Gemini ở Q5**: Điều 22 lên top-1 nhờ khớp đúng chuỗi số hiệu và ngày, trong khi Gemini để Điều 22 ở hạng 2–3.
 
 ---
 
@@ -210,7 +228,8 @@ Có ba cách chấm (chi tiết ở mục 3):
 > 2. **Failure case Q1:** cosine đo độ giống **chủ đề**, không đo mật độ đáp án. Chunk định nghĩa "Tỷ lệ tương đồng học thuật là…" (0.892) thắng chunk chứa "từ 20% trở lên", vì câu hỏi lặp lại gần như nguyên văn cụm "tỷ lệ tương đồng … sản phẩm học thuật". Đề xuất sửa: gộp heading con vào chunk cha (định nghĩa và ngưỡng 20% nằm cùng Điều 2), thêm hybrid BM25 cho truy vấn có con số, hoặc tăng top-k lên 5 rồi rerank.
 > 3. **Metadata phải khớp chiều lọc:** filter chỉ có tác dụng vì nhóm đã tách trang UEH/UNA thành nhiều file theo `audience`. Nếu để nguyên một file `audience: all` thì filter không lọc được gì.
 > 4. **Embedding không hiểu phủ định:** "được phép" và "không được phép dùng AI để kiểm tra chính tả" cho cosine 0.924. Với văn bản quy định, LLM phải đọc kỹ ngữ cảnh, không thể tin score.
-> 5. **Model embedding quan trọng ngang chiến lược chunking:** cùng chiến lược recursive, Gemini lấy đúng tài liệu gold ở cả 5 câu (naive 10/10), còn OpenAI `text-embedding-3-small` (bản của Dũng) chỉ đạt naive 6/10. Hai câu hỏi tiếng Việt nhắm vào tài liệu tiếng Anh (Q3 RMIT, Q4 UNA) bị kéo sang quy định UEH tiếng Việt: model chọn cùng ngôn ngữ thay vì cùng nghĩa. Với corpus song ngữ cần embedding đa ngữ mạnh, hoặc dịch/chuẩn hoá câu hỏi, hoặc lọc theo `language`/`issuer`.
+> 5. **Model embedding quan trọng ngang chiến lược chunking:** cùng chiến lược recursive, Gemini lấy đúng tài liệu gold ở cả 5 câu (naive 10/10), còn OpenAI `text-embedding-3-small` (bản của Dũng) chỉ đạt naive 6/10. TF-IDF (bản của Khang) cũng chỉ 6/10. Hai câu hỏi tiếng Việt nhắm vào tài liệu tiếng Anh (Q3 RMIT, Q4 UNA) bị kéo sang quy định UEH tiếng Việt: model chọn cùng ngôn ngữ thay vì cùng nghĩa. Với corpus song ngữ cần embedding đa ngữ mạnh, hoặc dịch/chuẩn hoá câu hỏi, hoặc lọc theo `language`/`issuer`.
+> 5b. **Lexical và semantic bù nhau, nên dùng hybrid:** TF-IDF của Khang đưa Điều 22 lên top-1 ở Q5 (khớp chính xác "49/2026/TT-BGDĐT", "hiệu lực") trong khi Gemini để nó ở hạng 2–3. Ngược lại, Gemini thắng hẳn ở câu hỏi khác ngôn ngữ. Đây là bằng chứng thực nghiệm cho đề xuất hybrid BM25 + embedding ở failure case Q1.
 > 6. **Agent vẫn có thể sai khi ngữ cảnh thiếu:** ở Q5 bản của Dũng, chunk top-1 có khoản "thay thế" nhưng thiếu khoản "hiệu lực 15/08/2026", và `gpt-4.1-mini` lấy nhầm ngày ký 30/06/2026 ở chunk mở đầu làm ngày hiệu lực. Lỗi grounding kiểu này không bắt được nếu chỉ chấm retrieval.
 
 **Bài học rút ra khi so sánh trong nhóm:**

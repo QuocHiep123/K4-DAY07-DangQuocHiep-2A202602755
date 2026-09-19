@@ -1,0 +1,69 @@
+LOCAL DKH BENCHMARK — Nguyen Viet Dung (2A202602812)
+UTC: 2026-09-19T09:39:34.056349+00:00 strategy=recursive
+documents=10 chunks=177 avg_len=359.49
+corpus_sha256=040684edb3d8458a5c693cdda0e4a110193d40d219025665f0c1f730be37a68a
+Scoring: naive=source-document match; content(evidence)=all anchors in one chunk.
+provider=openai embedding=text-embedding-3-small llm=gpt-4.1-mini; no mock fallback
+
+Q1: Theo quy định của UEH, tỷ lệ tương đồng từ bao nhiêu % thì sản phẩm học thuật bị xem là có dấu hiệu đạo văn?
+filter=None
+  1. id=ueh-dao-van-ai-quy-dinh-chung:chunk:0010_78 score=0.689775 audience=all   (Điều 3.1 — Turnitin, kết quả chỉ tham khảo)
+  2. id=ueh-dao-van-ai-quy-dinh-chung:chunk:0004_72 score=0.685874 audience=all   (định nghĩa tỷ lệ tương đồng học thuật)
+  3. id=ueh-dao-van-ai-quy-dinh-chung:chunk:0002_70 score=0.600630 audience=all   (phạm vi sản phẩm học thuật)
+naive=2/2 content(evidence)=0/2 evidence_rank=None
+agent: "... không có quy định cụ thể về tỷ lệ phần trăm tương đồng từ bao nhiêu % ... việc đánh giá dựa trên nhiều yếu tố và sự xem xét chuyên môn [Context 1], [Context 2]."
+gold: Từ 20% trở lên sau các loại trừ quy định; chỉ là dấu hiệu, không tự động kết luận đạo văn.
+rubric (nhóm chấm): 0 — không chunk nào chứa đáp án; agent không trả lời được.
+
+Q2: Sản phẩm học thuật đã chỉnh sửa nhưng vẫn vi phạm lỗi đạo văn thì xử lý ra sao?
+filter={'audience': 'student'}
+  1. id=ueh-xu-ly-vi-pham-nguoi-hoc:chunk:0002_113 score=0.618763 audience=student   (2.3 a) lần đầu nộp lại; b) vẫn vi phạm -> lập biên bản)
+  2. id=ueh-xu-ly-vi-pham-nguoi-hoc:chunk:0003_114 score=0.583193 audience=student
+  3. id=ueh-xu-ly-vi-pham-nguoi-hoc:chunk:0001_112 score=0.573089 audience=student
+naive=2/2 content(evidence)=2/2 evidence_rank=1
+agent: "Khi sản phẩm học thuật đã được chỉnh sửa nhưng vẫn vi phạm lỗi đạo văn, giảng viên phụ trách học phần sẽ lập biên bản hoặc thông báo chuyển về đơn vị quản lý để xử lý tùy theo mức độ vi phạm quy định tại Phụ lục 3 [Context 1]."
+rubric (nhóm chấm): 2
+
+Q3: Câu acknowledgement khi dùng công cụ AI cần nêu những thông tin gì?
+filter=None
+  1. id=ueh-dao-van-ai-quy-dinh-chung:chunk:0018_86 score=0.661313 audience=all   (nguyên tắc Minh bạch — mẫu khai báo UEH)
+  2. id=ueh-dao-van-ai-quy-dinh-chung:chunk:0021_89 score=0.604784 audience=all
+  3. id=ueh-dao-van-ai-quy-dinh-chung:chunk:0022_90 score=0.568009 audience=all
+naive=0/2 content(evidence)=0/2 evidence_rank=None
+agent: trả lời theo mẫu khai báo của UEH ("Một phần nội dung ... được hỗ trợ bởi ChatGPT (phiên bản …)") [Context 1]
+gold: Cách sử dụng; tên công cụ và creator; năm tạo nội dung AI.
+rubric (nhóm chấm): 0 — không lấy được tài liệu RMIT.
+
+Q4: Những loại thông tin nào không được phép nhập vào công cụ AI tạo sinh?
+filter=None
+  1. id=ueh-dao-van-ai-quy-dinh-chung:chunk:0021_89 score=0.664145 audience=all
+  2. id=ueh-dao-van-ai-quy-dinh-chung:chunk:0018_86 score=0.627966 audience=all
+  3. id=ueh-dao-van-ai-quy-dinh-chung:chunk:0022_90 score=0.603891 audience=all
+naive=0/2 content(evidence)=0/2 evidence_rank=None
+agent: "... dữ liệu nhạy cảm như dữ liệu cá nhân, dữ liệu tài chính, dữ liệu kinh doanh nội bộ, dữ liệu chưa công bố ..." [Context 3] (theo UEH)
+gold: Theo UNA: FERPA records, Social Security numbers, thẻ, y tế, ...
+rubric (nhóm chấm): 0 — không lấy được tài liệu UNA.
+
+Q5: Thông tư 49/2026/TT-BGDĐT có hiệu lực từ ngày nào, thay thế thông tư nào?
+filter=None
+  1. id=tt49-2026-ung-dung-cong-nghe-ai:chunk:0032_66 score=0.542672 audience=all   (Điều 22 khoản 2 — TT 15/2018, TT 30/2023 hết hiệu lực)
+  2. id=tt49-2026-ung-dung-cong-nghe-ai:chunk:0000_34 score=0.534611 audience=all   (phần mở đầu — ngày ký 30/06/2026)
+  3. id=ueh-dao-van-ai-quy-dinh-chung:chunk:0033_101 score=0.465793 audience=all   (Điều 7 UEH)
+naive=2/2 content(evidence)=0/2 evidence_rank=None
+agent: "Thông tư 49/2026/TT-BGDĐT có hiệu lực thi hành từ ngày 30 tháng 6 năm 2026. Thông tư này làm cho Thông tư số 30/2023/TT-BGDĐT ... hết hiệu lực ..." [Context 1][Context 2]
+gold: 15/08/2026; TT 15/2018/TT-BGDĐT và TT 30/2023/TT-BGDĐT hết hiệu lực từ ngày đó.
+rubric (nhóm chấm): 1 — có chunk liên quan nhưng agent SAI ngày (lấy ngày ký) và bỏ sót TT 15/2018.
+
+TOTAL naive=6/10 evidence=2/10 rubric=3/10
+
+A/B METADATA FILTER — Q2
+filter=None
+  1. id=ueh-xu-ly-vi-pham-giang-vien:chunk:0001_104 score=0.684432 audience=faculty   ("vẫn vi phạm: sản phẩm không được công nhận, không được nghiệm thu")
+  2. id=ueh-xu-ly-vi-pham-nguoi-hoc:chunk:0002_113 score=0.618763 audience=student
+  3. id=ueh-dao-van-ai-quy-dinh-chung:chunk:0008_76 score=0.615334 audience=all
+naive=1/2 content(evidence)=1/2 evidence_rank=2
+filter={'audience': 'student'}
+  1. id=ueh-xu-ly-vi-pham-nguoi-hoc:chunk:0002_113 score=0.618763 audience=student
+  2. id=ueh-xu-ly-vi-pham-nguoi-hoc:chunk:0003_114 score=0.583193 audience=student
+  3. id=ueh-xu-ly-vi-pham-nguoi-hoc:chunk:0001_112 score=0.573089 audience=student
+naive=2/2 content(evidence)=2/2 evidence_rank=1
