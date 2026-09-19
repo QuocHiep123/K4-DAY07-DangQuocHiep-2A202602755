@@ -1,7 +1,7 @@
 # Báo Cáo Cá Nhân — Lab 7: Embedding & Vector Store
 
 **Họ tên:** Đặng Quốc Hiệp — MSSV: 2A202602755
-**Nhóm:** [Tên nhóm] — chủ đề *AI & liêm chính học thuật trong đại học*
+**Nhóm:** DKH — chủ đề *AI & liêm chính học thuật trong đại học*
 **Vai trong nhóm:** R3 · Strategy (chunker theo heading)
 **Ngày:** 2026-09-19
 

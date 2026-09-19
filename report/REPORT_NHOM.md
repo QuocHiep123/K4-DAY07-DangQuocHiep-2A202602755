@@ -1,6 +1,6 @@
 # Báo Cáo Nhóm — Lab 7: Embedding & Vector Store
 
-**Nhóm:** [Tên nhóm]
+**Nhóm:** DKH
 **Thành viên:**
 - Đặng Quốc Hiệp — 2A202602755 (R3 · Strategy — HeadingChunker)
 - Nguyễn Thế Khang — 2A202602964 (R1 · Data — FixedSizeChunker)
