@@ -86,7 +86,7 @@ Nhóm chạy `ChunkingStrategyComparator().compare(body, chunk_size=500)` trên 
 
 ### Chiến lược của từng thành viên
 
-Cả 3 chiến lược chạy chung một script `bench.py`, cùng embedding `gemini-embedding-001`, cùng LLM `gemini-2.5-flash`, cùng 5 query. Mỗi người chỉ đổi dòng `STRATEGY`.
+Mỗi thành viên tự chạy chiến lược của mình trên máy riêng, với backend embedding mình có (xem bảng "Kết quả mỗi thành viên tự chạy" bên dưới). Vì ba backend khác nhau nên điểm tự chạy **không so trực tiếp được**. Để so sánh công bằng, nhóm chạy thêm một **bản đối chứng**: cả 3 chiến lược cùng chạy qua `bench.py --strategy all`, cùng embedding `gemini-embedding-001`, cùng LLM `gemini-2.5-flash`, cùng 5 query (log trong `ket_qua_benchmark.txt`). Kết luận về chiến lược dựa trên bản đối chứng này.
 
 **Thành viên 1 — Đặng Quốc Hiệp (2A202602755)**
 - **Loại chiến lược:** custom `HeadingChunker(max_chars=800)`, chunk theo Điều/mục (vai bắt buộc của L3A)
@@ -124,12 +124,38 @@ class HeadingChunker:
 **Thành viên 2 — Nguyễn Thế Khang (2A202602964)**
 - **Loại chiến lược:** `FixedSizeChunker(chunk_size=500, overlap=100)`
 - **Mô tả & lý do chọn:** Đây là baseline không phụ thuộc cấu trúc. Overlap 100 (20%) giúp thông tin nằm ở ranh giới có hai cơ hội lọt top-k, và corpus crawl về không phải lúc nào cũng có heading sạch.
+- **Tự chạy:** backend TF-IDF (lexical, offline) và mock, đo Hit@3/MRR ở mức tài liệu cho 4 chiến lược; agent là extractive baseline, không phải LLM.
 
 **Thành viên 3 — Nguyễn Việt Dũng (2A202602812)**
 - **Loại chiến lược:** `RecursiveChunker(chunk_size=500)`
 - **Mô tả & lý do chọn:** Cắt theo ranh giới tự nhiên `\n\n` → `\n` → `. ` → ` `, rồi gom lại tới sát 500 ký tự. Cách này tôn trọng đoạn văn mà không cần biết cú pháp Markdown.
+- **Tự chạy:** embedding OpenAI `text-embedding-3-small`, LLM `gpt-4.1-mini`; 177 chunk, avg_len 359; đủ top-3 từng câu và A/B filter.
 
-### So Sánh Giữa Các Thành Viên
+### Kết quả mỗi thành viên tự chạy
+
+**Nguyễn Thế Khang:** TF-IDF và mock, Hit@3/MRR ở mức tài liệu, 4 chiến lược:
+
+| Backend | fixed_size | by_sentences | recursive | heading |
+|---|---|---|---|---|
+| TF-IDF (word unigram, L2) | 92 chunk · Hit@3 100% · MRR 1.000 | 133 · 80% · 0.700 | 102 · 80% · 0.800 | 145 · 100% · 1.000 |
+| mock | 92 · 40% · 0.167 | 133 · 20% · 0.067 | 102 · 20% · 0.100 | 145 · 20% · 0.200 |
+
+> Nhận xét: với TF-IDF, fixed_size và heading cùng đạt Hit@3 100%. Mock chỉ 20–40%, gần ngẫu nhiên, đúng như dự đoán vì mock không mang ngữ nghĩa. Đây là chấm theo tài liệu nên không nói được chunk có chứa đáp án hay không. Demo Q2 (TF-IDF + heading) trả về 3 chunk `ueh-xu-ly-vi-pham-nguoi-hoc`, nhưng đoạn trích ra là "vi phạm lần đầu → nộp lại bài", chưa phải ý "vẫn vi phạm sau chỉnh sửa → lập biên bản".
+
+**Nguyễn Việt Dũng:** OpenAI `text-embedding-3-small` + `gpt-4.1-mini`, recursive (177 chunk). Rubric do nhóm chấm thủ công:
+
+| # | Top-1 (score) | Chunk chứa đáp án? | Agent | Rubric |
+|---|---|---|---|---|
+| Q1 | `ueh-dao-van…` Điều 3 Turnitin (0.690) | Không (chunk có "20%" không vào top-3) | "Không có tỷ lệ cụ thể" (có căn cứ, nhưng không trả lời được) | 0 |
+| Q2 | `ueh-xu-ly-vi-pham-nguoi-hoc` (0.619) | Có, hạng 1 | "Giảng viên lập biên bản chuyển đơn vị quản lý…" ✅ | 2 |
+| Q3 | `ueh-dao-van…` nguyên tắc Minh bạch (0.661) | Không, top-3 toàn UEH, không có RMIT | Trả lời theo mẫu khai báo của UEH, **không phải** đáp án RMIT | 0 |
+| Q4 | `ueh-dao-van…` hành vi vi phạm (0.664) | Không, top-3 toàn UEH, không có UNA | Chỉ nêu "dữ liệu nhạy cảm" theo UEH | 0 |
+| Q5 | `tt49…` Điều 22 khoản 2 (0.543) | Một phần: có TT thay thế, thiếu khoản 1 "hiệu lực 15/08/2026" | **Sai ngày:** nói hiệu lực 30/06/2026 (nhầm ngày ký); bỏ sót TT 15/2018 | 1 |
+| | | naive 6/10 · evidence 2/10 | | **3/10** |
+
+A/B Q2 (Dũng): không filter thì top-1 là `ueh-xu-ly-vi-pham-giang-vien` (0.684, faculty), evidence 1/2; có filter `student` thì top-1 là `ueh-xu-ly-vi-pham-nguoi-hoc` (0.619), evidence 2/2. Kết quả này khớp với bản đối chứng Gemini.
+
+### So Sánh Giữa Các Thành Viên (bản đối chứng, cùng Gemini)
 
 Có ba cách chấm (chi tiết ở mục 3):
 - **naive:** chỉ kiểm tra `doc_id` gold có nằm trong top-3 không.
@@ -143,7 +169,7 @@ Có ba cách chấm (chi tiết ở mục 3):
 | Nguyễn Việt Dũng | Recursive(500) | 161 / 393 | 10 | 2 | **5** | Chunk gọn, Q2 đứng top-1 | Mảnh con mất tên Điều; Q5 lấy đúng Điều 22 nhưng thiếu dòng "hiệu lực", agent trả lời thiếu |
 
 **Chiến lược nào tốt nhất cho chủ đề này? Tại sao?**
-> **HeadingChunker** tốt nhất (rubric 7/10, evidence 6/10), vì văn bản quy định vốn được cấu trúc theo Điều/mục, và việc gắn tiêu đề Điều vào chunk vừa làm embedding "hiểu" chunk nói về điều gì, vừa cho LLM ngữ cảnh để trả lời đúng đối tượng. Tuy vậy, khác biệt thật nằm ở **mức nội dung**: chấm theo `doc_id` thì cả ba chiến lược đều 10/10 và không phân biệt được gì. Chỉ khi kiểm tra chunk có chứa đáp án hay không thì mới lộ ra rằng chunker "đúng tài liệu nhưng sai đoạn" thua rõ (recursive chỉ 2/10 evidence). Chưa có chiến lược nào thắng mọi câu: fixed có overlap thắng ở câu liệt kê dài (Q4).
+> **HeadingChunker** tốt nhất (rubric 7/10, evidence 6/10), vì văn bản quy định vốn được cấu trúc theo Điều/mục, và việc gắn tiêu đề Điều vào chunk vừa làm embedding "hiểu" chunk nói về điều gì, vừa cho LLM ngữ cảnh để trả lời đúng đối tượng. Tuy vậy, khác biệt thật nằm ở **mức nội dung**: chấm theo `doc_id` thì cả ba chiến lược đều 10/10 và không phân biệt được gì. Chỉ khi kiểm tra chunk có chứa đáp án hay không thì mới lộ ra rằng chunker "đúng tài liệu nhưng sai đoạn" thua rõ (recursive chỉ 2/10 evidence). Chưa có chiến lược nào thắng mọi câu: fixed có overlap thắng ở câu liệt kê dài (Q4). Kết quả tự chạy của Khang (TF-IDF: heading và fixed cùng Hit@3 100%, recursive 80%) cũng xếp hạng giống bản đối chứng: recursive đứng cuối.
 
 ---
 
@@ -161,7 +187,7 @@ Có ba cách chấm (chi tiết ở mục 3):
 
 ### Tổng hợp chất lượng truy xuất của nhóm
 
-Điểm rubric theo từng chiến lược (Heading / Fixed / Recursive):
+Điểm rubric theo từng chiến lược (Heading / Fixed / Recursive), trên bản đối chứng cùng Gemini:
 
 | # | Câu hỏi | Chiến lược tốt nhất cho câu này | Có chunk liên quan trong top-3? | Ghi chú |
 |---|---------|-------------------------------|-------------------------------|---------|
@@ -184,9 +210,11 @@ Có ba cách chấm (chi tiết ở mục 3):
 > 2. **Failure case Q1:** cosine đo độ giống **chủ đề**, không đo mật độ đáp án. Chunk định nghĩa "Tỷ lệ tương đồng học thuật là…" (0.892) thắng chunk chứa "từ 20% trở lên", vì câu hỏi lặp lại gần như nguyên văn cụm "tỷ lệ tương đồng … sản phẩm học thuật". Đề xuất sửa: gộp heading con vào chunk cha (định nghĩa và ngưỡng 20% nằm cùng Điều 2), thêm hybrid BM25 cho truy vấn có con số, hoặc tăng top-k lên 5 rồi rerank.
 > 3. **Metadata phải khớp chiều lọc:** filter chỉ có tác dụng vì nhóm đã tách trang UEH/UNA thành nhiều file theo `audience`. Nếu để nguyên một file `audience: all` thì filter không lọc được gì.
 > 4. **Embedding không hiểu phủ định:** "được phép" và "không được phép dùng AI để kiểm tra chính tả" cho cosine 0.924. Với văn bản quy định, LLM phải đọc kỹ ngữ cảnh, không thể tin score.
+> 5. **Model embedding quan trọng ngang chiến lược chunking:** cùng chiến lược recursive, Gemini lấy đúng tài liệu gold ở cả 5 câu (naive 10/10), còn OpenAI `text-embedding-3-small` (bản của Dũng) chỉ đạt naive 6/10. Hai câu hỏi tiếng Việt nhắm vào tài liệu tiếng Anh (Q3 RMIT, Q4 UNA) bị kéo sang quy định UEH tiếng Việt: model chọn cùng ngôn ngữ thay vì cùng nghĩa. Với corpus song ngữ cần embedding đa ngữ mạnh, hoặc dịch/chuẩn hoá câu hỏi, hoặc lọc theo `language`/`issuer`.
+> 6. **Agent vẫn có thể sai khi ngữ cảnh thiếu:** ở Q5 bản của Dũng, chunk top-1 có khoản "thay thế" nhưng thiếu khoản "hiệu lực 15/08/2026", và `gpt-4.1-mini` lấy nhầm ngày ký 30/06/2026 ở chunk mở đầu làm ngày hiệu lực. Lỗi grounding kiểu này không bắt được nếu chỉ chấm retrieval.
 
 **Bài học rút ra khi so sánh trong nhóm:**
-> Cùng tài liệu, cùng query, nhưng mỗi chiến lược hỏng ở một chỗ khác nhau. Heading giữ ngữ cảnh tốt nhất nhưng tách câu dẫn khỏi danh sách (Q4). Fixed có overlap cứu được danh sách dài nhưng cắt ngang câu (Q1). Recursive cho chunk gọn nhưng mảnh con mất tên Điều nên khó khớp câu hỏi về "hiệu lực" (Q5). Không chiến lược nào thắng mọi câu, và hướng kết hợp tự nhiên là heading + overlap.
+> Cùng tài liệu, cùng query, nhưng mỗi chiến lược hỏng ở một chỗ khác nhau. Heading giữ ngữ cảnh tốt nhất nhưng tách câu dẫn khỏi danh sách (Q4). Fixed có overlap cứu được danh sách dài nhưng cắt ngang câu (Q1). Recursive cho chunk gọn nhưng mảnh con mất tên Điều nên khó khớp câu hỏi về "hiệu lực" (Q5). Không chiến lược nào thắng mọi câu, và hướng kết hợp tự nhiên là heading + overlap. Một bài học khác đến từ việc mỗi người tự chạy trên backend khác nhau: nếu không cố định embedding và LLM thì không thể biết chênh lệch đến từ chunker hay từ model, nên phải có bản đối chứng cùng backend.
 
 **Nếu làm lại, nhóm sẽ thay đổi gì trong chiến lược dữ liệu (data strategy)?**
 > (1) Loại bỏ nội dung trùng lặp: phần "Data Privacy and Security" của UNA bị lặp nguyên văn trong file `general` và `faculty`, nên hai chunk giống hệt nhau (cùng score 0.788/0.832) chiếm hai slot top-3. Nên chỉ giữ ở `general` (audience=all). (2) Làm sạch file RMIT VN (còn phần menu "What is academic integrity?" bị lặp). (3) Thêm trường `section`/`article` (ví dụ `Điều 22`) vào metadata của từng chunk để có thể lọc hoặc boost theo Điều khi câu hỏi nêu rõ.

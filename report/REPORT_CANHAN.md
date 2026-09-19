@@ -163,7 +163,8 @@ Chiến lược của mình: **`HeadingChunker(max_chars=800)`**, loại custom,
 Điểm theo rubric `SCORING.md`: Q1 = 1, Q2 = 2, Q3 = 2, Q4 = 1, Q5 = 1, tổng **7 / 10**. Trong khi đó, chấm ngây thơ theo `doc_id` cho 10/10. Chấm tự động theo chuỗi bằng chứng (`evidence`) cho 6/10.
 
 **Điều hay nhất tôi học được từ thành viên khác / nhóm khác (qua demo):**
-> Chiến lược `FixedSizeChunker` có overlap 100 của Nguyễn Thế Khang, tuy "thô", lại **thắng mình ở Q4**. Danh sách dài bị cắt ngang ở ranh giới, nhưng nhờ overlap nên chunk top-1 vẫn chứa phần đầu danh sách ("Student records subject to FERPA… Social Security numbers"). Chunker theo heading của mình thì tách phần mở đầu section khỏi danh sách, và mảnh mở đầu lại khớp câu hỏi nhất. Bài học: nên kết hợp heading với overlap, hoặc khi phải cắt một section thì đảm bảo mảnh đầu mang theo nội dung chứ không chỉ câu dẫn.
+> Từ bản của Nguyễn Việt Dũng: cùng chiến lược recursive nhưng dùng OpenAI `text-embedding-3-small` thì Q3/Q4 (câu hỏi tiếng Việt, tài liệu tiếng Anh) bị kéo hết sang quy định UEH tiếng Việt (naive 6/10, so với 10/10 khi dùng Gemini). Model embedding quan trọng không kém chiến lược chunking.
+> Khi nhóm chạy đối chứng cùng Gemini, chiến lược `FixedSizeChunker` có overlap 100 của Nguyễn Thế Khang, tuy "thô", lại **thắng mình ở Q4**. Danh sách dài bị cắt ngang ở ranh giới, nhưng nhờ overlap nên chunk top-1 vẫn chứa phần đầu danh sách ("Student records subject to FERPA… Social Security numbers"). Chunker theo heading của mình thì tách phần mở đầu section khỏi danh sách, và mảnh mở đầu lại khớp câu hỏi nhất. Bài học: nên kết hợp heading với overlap, hoặc khi phải cắt một section thì đảm bảo mảnh đầu mang theo nội dung chứ không chỉ câu dẫn.
 
 ---
 
