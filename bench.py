@@ -1,8 +1,9 @@
 """Benchmark 5 câu hỏi của nhóm trên corpus data/ai-liem-chinh-hoc-thuat.
 
 Chạy:
-    python bench.py                      # chiến lược của tôi (STRATEGY bên dưới)
+    python bench.py                      # chiến lược của tôi (STRATEGY bên dưới), ghi ket_qua_benchmark.txt
     python bench.py --strategy all       # cả 3 chiến lược của nhóm + A/B filter, ghi ket_qua_benchmark.txt
+    python bench.py --no-agent           # chỉ đo retrieval, không gọi LLM, không ghi file
 
 Mỗi thành viên chỉ đổi dòng STRATEGY; mọi thứ khác (corpus, embedder, query, cách chấm) giữ nguyên.
 """
@@ -398,7 +399,7 @@ def main() -> int:
         out(f"{run['strategy']:12} {run['chunks']:>7} {run['avg_len']:>8.0f} "
             f"{run['totals']['naive']:>9} {run['totals']['content']:>11}")
 
-    if args.strategy == "all":
+    if not args.no_agent:
         OUTPUT_PATH.write_text("\n".join(lines) + "\n", encoding="utf-8")
         print(f"\nĐã ghi {OUTPUT_PATH.name}")
     return 0
